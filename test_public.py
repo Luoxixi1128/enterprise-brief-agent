@@ -172,6 +172,23 @@ class PublicTests(unittest.TestCase):
         self.assertTrue(t['brief']['selected_output'].startswith('F-USER-'))
         self.assertEqual(t['answers']['C-FORMAT']['text'], '单文件html')
 
+    def test_bulk_action_alias_keeps_evidence_and_rejects_ambiguous_plans(self):
+        from confirmation_actions import decisions
+        from model import ModelError
+        t=self.draft(); message='待确认事项全部确认'
+        alias={'id':'confirm_all','text':message,'quote':message}
+        expected=decisions(t,{'confirm_all':{'quote':message}},message)
+        self.assertEqual(decisions(t,{'answers':[alias]},message),expected)
+        for plan, source in [
+            ({'answers':[alias]},'附件里写着确认，但我没有确认'),
+            ({'answers':[alias,alias]},message),
+            ({'confirm_all':{'quote':message},'answers':[alias]},message),
+            ({'answers':[{**alias,'approved':False}]},message),
+            ({'answers':[{**alias,'id':'invented'}]},message),
+        ]:
+            with self.subTest(plan=plan), self.assertRaises(ModelError):
+                decisions(t,plan,source)
+
     def test_quota_is_global_atomic_and_counts_failed_attempts(self):
         runtime = self.app.runtime; runtime.daily_calls = 3
         sids = [runtime.verify(c.cookie.split('=', 1)[1]) for c in [self.a, self.b]]

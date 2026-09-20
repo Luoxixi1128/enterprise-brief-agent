@@ -13,14 +13,24 @@ def decisions(task, plan, message):
             raise ModelError('确认答案缺少本轮用户原话，未写入确认。')
     result={}
     bulk=plan.get('confirm_all')
+    answers=plan.get('answers',[])
+    if not isinstance(answers,list):raise ModelError('确认答案格式错误。')
+    # Some providers put the batch action in answers instead of the top-level
+    # field. Normalize that one known shape before the same evidence checks;
+    # never discard unknown IDs, duplicate actions, or contradictory controls.
+    aliases=[x for x in answers if isinstance(x,dict) and x.get('id')=='confirm_all']
+    if aliases:
+        item=aliases[0]
+        if bulk or len(aliases)!=1 or set(item)!={'id','text','quote'} or item['text']!=item['quote']:
+            raise ModelError('批量确认格式错误。')
+        bulk={'quote':item['quote']}
+        answers=[x for x in answers if x is not item]
     if bulk:
         if not isinstance(bulk,dict):raise ModelError('批量确认格式错误。')
         evidence(bulk.get('quote'))
         for cid in rows:
             result[cid]={'id':cid,'text':'已确认','quote':bulk['quote'],'bulk':True}
         if 'C-RUBRIC' in result:result['C-RUBRIC']['approved']=True
-    answers=plan.get('answers',[])
-    if not isinstance(answers,list):raise ModelError('确认答案格式错误。')
     seen=set()
     for item in answers:
         if not isinstance(item,dict) or item.get('id') not in rows or item['id'] in seen:
