@@ -48,6 +48,7 @@ h1,h2,h3{font-family:var(--serif);font-weight:900}h1{font-size:32px;letter-spaci
 @media(max-width:800px){.submission-layout{grid-template-columns:1fr}.process-scroll{height:300px;max-height:none}.submission-layout .process-history{border-top:1px solid #dcd5c7;padding-top:20px}.task-step small{display:none}.task-step strong{font-size:13px}.task-step{gap:7px}.history-scroll{height:280px}}
 
 .release-card{margin-bottom:24px}.release-card li{margin:9px 0;line-height:1.7}
+.workspace-info-panel{margin-top:24px}
 
 /* V4.0 visual refinement: outlined surfaces with restrained, nested rounding. */
 :root{--surface-radius:20px;--control-radius:10px}
