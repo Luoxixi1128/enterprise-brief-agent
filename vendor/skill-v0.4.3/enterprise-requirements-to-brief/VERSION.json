@@ -1,0 +1,27 @@
+{
+  "name": "enterprise-requirements-to-brief",
+  "version": "0.4.3",
+  "state": "candidate",
+  "maturity": "draft",
+  "updated_at": "2026-09-11",
+  "compatibility": {
+    "python": ">=3.10",
+    "dependencies": [
+      "python-docx",
+      "openpyxl",
+      "pypdf"
+    ],
+    "platforms": [
+      "Windows",
+      "macOS",
+      "Linux"
+    ]
+  },
+  "rollback": {
+    "method": "Use the unchanged v0.4.0 or original v0.3.0 archive; installed Skill is unchanged.",
+    "baseline_sha256": "8fe05d6c687728572bd3cae80e14b1dfa7f946112798b54e6c62f3cbb85727bc"
+  },
+  "changes": [
+    "Remove paragraph formatting markers from all non-heading content, including body text, table headers/cells, confirmation boxes, signature lines and spacers."
+  ]
+}

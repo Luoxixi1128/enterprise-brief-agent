@@ -1,0 +1,261 @@
+{
+  "title": "示例：授权测试材料的线索整理",
+  "taxonomy": {
+    "industry_l1": "广告营销",
+    "industry_l2": "垂直行业社媒获客",
+    "role_l1": "销售",
+    "role_l2": "线索开发与触达运营"
+  },
+  "scenario": "在垂直行业社媒获客场景中，销售线索运营人员用企业目标和授权测试互动完成找人、判断、触达、回复承接与留资分流。",
+  "purpose": "输入行业目标、客户定义和触达边界后，Skill从授权测试材料中形成可追溯线索，完成测试触达与回复分流，帮助销售负责人复查全过程。",
+  "objective": "让销售负责人看清每条测试线索从哪里来、为何联系、发生了什么以及是否值得人工跟进。",
+  "sources": {
+    "S1": "自拟结构示例，不是真实客户材料",
+    "U1": "示例格式约定",
+    "U2": "示例完整范围约定"
+  },
+  "task_fit": {
+    "skill_task": true,
+    "autonomous_run": true,
+    "private_data_required": true,
+    "ai_trivial": false,
+    "nontrivial_reason": "需要完成多步处理、规则判断、证据留存、结果校验和异常分流，并对同类新输入复用。",
+    "data_strategy": "企业提供目标、规则和完整任务所需的测试环境与账号权限；缺少时列为待提供，不删除对应环节。",
+    "conversion_note": "",
+    "scope_change_applied": false,
+    "scope_change_authorized": false
+  },
+  "runtime": {
+    "interactive_required": false,
+    "minimum_input": "行业与获客目标、目标客户口径、允许触达的内容与人工接管规则",
+    "defaults": [],
+    "ambiguity_policy": "证据不足时标记待确认，不计为高意向；重复用户合并；风险命中后停止外部动作并继续整理记录",
+    "human_role_after_run": "审核线索、批准测试发送并接管投诉、敏感问题或业务承诺"
+  },
+  "inputs": [
+    {
+      "id": "I1",
+      "owner": "customer",
+      "required": true,
+      "module": "业务口径",
+      "name": "行业与获客目标",
+      "requirement": "用一句话说明服务、要找的人和什么算有效线索。",
+      "example": "新能源汽车门店，希望找到主动询问试驾且愿意继续沟通的用户。",
+      "source": "S1"
+    },
+    {
+      "id": "I2",
+      "owner": "customer",
+      "required": true,
+      "module": "业务口径",
+      "name": "目标客户与排除条件",
+      "requirement": "列出3—5个需求信号，以及围观、拒绝、敏感信息等排除情形。",
+      "example": "询问试驾时间属于需求信号；单纯点赞不算；明确拒绝立即停止。",
+      "source": "S1"
+    },
+    {
+      "id": "I3",
+      "owner": "customer",
+      "required": true,
+      "module": "触达边界",
+      "name": "允许话术与人工接管规则",
+      "requirement": "给一条可用首句并说明价格、优惠、投诉等由谁处理。",
+      "example": "可询问方便沟通时间；不承诺价格和库存；要求真人时交销售。",
+      "source": "S1"
+    },
+    {
+      "id": "I4",
+      "owner": "customer_optional",
+      "required": false,
+      "module": "测试材料",
+      "name": "互动样例",
+      "requirement": "可提供脱敏互动，保留用户代号、原话、来源和时间。",
+      "example": "30条JSON/CSV互动，含来源、用户代号、原话和时间。",
+      "source": "S1",
+      "student_fallback": "按原任务要求准备覆盖需求、围观、重复、拒绝等情况的模拟样例，并标明模拟性质。"
+    },
+    {
+      "id": "I5",
+      "owner": "customer",
+      "required": true,
+      "name": "企业测试环境和账号权限",
+      "requirement": "提供任务所用平台的测试环境、允许操作的范围和企业对接人，账号权限由企业通过安全方式开通。",
+      "dependency_note": "完整任务需企业提供测试环境、账号权限及发送或写入授权，不在表中填写密码",
+      "example": "指定测试空间和测试账号，可测试发送、回复和转人工；生产发送另按企业授权执行。",
+      "source": "U2"
+    }
+  ],
+  "outputs": [
+    {
+      "id": "O1",
+      "name": "线索与证据清单",
+      "detail": "至少10位候选用户；每条含用户代号、来源、原话、需求判断、理由和待确认项。",
+      "example": "U008｜直播L02｜“周末能试驾吗”｜值得跟进｜询问具体行动。",
+      "source": "S1"
+    },
+    {
+      "id": "O2",
+      "name": "触达与会话记录",
+      "detail": "逐条记录计划内容、实际动作、平台或模拟回执、用户回复和停止原因。",
+      "example": "U008｜已发送测试消息｜回执成功｜要求真人｜已转人工并停止。",
+      "source": "S1"
+    },
+    {
+      "id": "O3",
+      "name": "漏斗与状态看板",
+      "detail": "展示已读取、候选、已触达、已回复、留资、转人工和失败数量，并可追到明细。",
+      "example": "30条互动→10位候选→3次测试触达→1次转人工。",
+      "source": "S1"
+    },
+    {
+      "id": "O4",
+      "name": "异常与人工接管清单",
+      "detail": "列出拒绝、重复、敏感、回执未知、登录失效等情况及处理状态。",
+      "example": "U003｜明确拒绝｜未发送｜无需重试。",
+      "source": "S1"
+    },
+    {
+      "id": "O5",
+      "name": "运行证据包",
+      "detail": "保存输入样例、规则版本、运行日志、关键截图或模拟回执和验收结果。",
+      "example": "evidence/inputs.csv、rules.json、run-log.jsonl、qa.xlsx。",
+      "source": "S1"
+    }
+  ],
+  "output_options": [
+    {
+      "id": "F1",
+      "label": "结果中心＋导出包",
+      "recommended": true,
+      "format": "本地HTML＋CSV/Excel＋证据文件夹",
+      "package": "index.html、leads.xlsx、events.csv、evidence/",
+      "structure": "HTML共4个区：任务概览看板、线索表、会话漏斗、异常与证据；表格可导出。",
+      "why": "最适合演示完整链路和逐条复查。"
+    },
+    {
+      "id": "F2",
+      "label": "Excel工作簿",
+      "recommended": false,
+      "format": "Excel",
+      "package": "1个工作簿",
+      "structure": "5张表：概览、线索、触达会话、异常、运行证据索引。",
+      "why": "便于销售团队筛选和批注，不强调网页交互。"
+    },
+    {
+      "id": "F3",
+      "label": "飞书多维表格",
+      "recommended": false,
+      "format": "飞书多维表格",
+      "package": "线索表、互动表、动作表和仪表盘",
+      "structure": "线索与互动关联；按状态、负责人、风险建视图；仪表盘展示漏斗。",
+      "why": "适合团队协作，但需企业提供可用空间与权限。"
+    }
+  ],
+  "selected_output": "",
+  "reviewer": {
+    "value": "",
+    "source": ""
+  },
+  "sample": {
+    "real": false,
+    "count": 3,
+    "note": "右侧为自拟示例，仅说明填法，不是真实客户或业务记录。"
+  },
+  "inferences": [],
+  "rubric_approved": false,
+  "kr2_2": [
+    {
+      "id": "Q1",
+      "name": "线索判断是否值得销售跟进",
+      "basis": "销售开发岗位通常以可观察需求信号和下一步行动可能性判断线索价值。",
+      "basis_type": "role_common_practice",
+      "company_check": "抽查候选和排除样例，看理由是否来自原话，边界案例是否保守。",
+      "anchor_1": "主要靠关键词或猜测，销售无法据此决定。",
+      "anchor_3": "多数有依据，部分边界仍需重判。",
+      "anchor_5": "理由贴合原话，销售能直接决定跟进或暂缓。",
+      "refs": [
+        "O1",
+        "I2"
+      ]
+    },
+    {
+      "id": "Q2",
+      "name": "首次触达是否自然且有分寸",
+      "basis": "社媒私信需要承接用户原话、说明来意，并避免未经授权的承诺。",
+      "basis_type": "role_common_practice",
+      "company_check": "销售负责人阅读测试消息和上下文，判断是否像真实沟通且不过度推销。",
+      "anchor_1": "套话明显或越界承诺。",
+      "anchor_3": "基本相关，但仍需改写关键句。",
+      "anchor_5": "自然承接原话，目的清楚且守住边界。",
+      "refs": [
+        "O2",
+        "I3"
+      ]
+    },
+    {
+      "id": "Q3",
+      "name": "回复分流是否符合销售节奏",
+      "basis": "销售承接需要知道何时继续追问、何时转人工、何时停止。",
+      "basis_type": "role_common_practice",
+      "company_check": "用拒绝、要真人、愿意留资和信息不足样例复核分流结果。",
+      "anchor_1": "继续骚扰或把模糊回复当成留资。",
+      "anchor_3": "大部分可用，少数情形需要人工重判。",
+      "anchor_5": "分流理由清楚，销售接手时上下文足够。",
+      "refs": [
+        "O2",
+        "O4"
+      ]
+    },
+    {
+      "id": "Q4",
+      "name": "结果是否帮助负责人采取下一步",
+      "basis": "获客结果应减少重新翻查，并支持分配、跟进或终止。",
+      "basis_type": "role_common_practice",
+      "company_check": "让销售负责人基于看板完成一次优先级排序和接管决定。",
+      "anchor_1": "看完仍不知道先跟谁或为什么。",
+      "anchor_3": "能做决定，但要补查多条原始记录。",
+      "anchor_5": "可直接排序、分配和终止，并能快速查看依据。",
+      "refs": [
+        "O3",
+        "O5"
+      ]
+    }
+  ],
+  "kr2_3": {
+    "稳定性": {
+      "check": "分别使用正常、缺失和重复样例，检查能否完成；失败时是否说明原因并保留已完成的结果。",
+      "anchor_1": "常见输入也无法完成",
+      "anchor_3": "异常输入需人工修补",
+      "anchor_5": "正常和常见异常都有明确结果"
+    },
+    "可迁移性": {
+      "check": "更换同类企业的客户条件或互动样例，再运行一次，检查是否需要重写主要步骤。",
+      "anchor_1": "换一组材料就无法使用",
+      "anchor_3": "需修改主要规则才可用",
+      "anchor_5": "换同类材料可直接使用"
+    },
+    "安全性": {
+      "check": "核对数据和账号使用是否获准；实际发送、发布或写入前确认授权及测试范围，不把凭据写入结果。",
+      "anchor_1": "泄露数据或越权操作",
+      "anchor_3": "部分记录需人工清理",
+      "anchor_5": "按授权范围操作并保护数据"
+    },
+    "效率": {
+      "check": "记录从输入到结果需要哪些人工修改，检查是否减少整理、判断和记录的重复工作。",
+      "anchor_1": "多数工作仍需人工重做",
+      "anchor_3": "关键步骤还要人工修改",
+      "anchor_5": "仅需约定的结果审核"
+    }
+  },
+  "confirmations": [],
+  "scope_assessment": {
+    "complex": true,
+    "long_chain": true,
+    "long_cycle": false,
+    "agent_like": true,
+    "enterprise_dependency": true,
+    "note": "原任务包含找人、联系、持续回复和留资，流程较长并依赖企业账号、测试环境及授权",
+    "student_slice": "先从互动材料中筛选候选客户并说明判断理由",
+    "original_enterprise_dependency": true
+  }
+}

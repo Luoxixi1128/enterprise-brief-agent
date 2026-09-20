@@ -1,0 +1,8 @@
+{
+  "product": "企业需求拆解Agent",
+  "version": "V5.0",
+  "released_on": "2026-09-18",
+  "stage": "V5.0 免费公开部署准备版；Render + Supabase 存储适配，本地回归通过，尚未上线",
+  "skill_version": "0.4.3",
+  "deployment_variant": "public-beta-render-free-supabase"
+}

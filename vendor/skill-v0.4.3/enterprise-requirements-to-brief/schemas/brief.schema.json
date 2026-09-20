@@ -1,0 +1,721 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:fdex:enterprise-brief:0.4.1",
+  "title": "FDE X enterprise brief v0.4.0",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scenario": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 130
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 150
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 110
+    },
+    "taxonomy": {
+      "type": "object",
+      "properties": {
+        "industry_l1": {
+          "type": "string",
+          "minLength": 1
+        },
+        "industry_l2": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role_l1": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role_l2": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "industry_l1",
+        "industry_l2",
+        "role_l1",
+        "role_l2"
+      ],
+      "additionalProperties": false
+    },
+    "sources": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "task_fit": {
+      "type": "object",
+      "properties": {
+        "skill_task": {
+          "const": true
+        },
+        "autonomous_run": {
+          "type": "boolean"
+        },
+        "private_data_required": {
+          "type": "boolean"
+        },
+        "ai_trivial": {
+          "const": false
+        },
+        "nontrivial_reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "data_strategy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "conversion_note": {
+          "type": "string"
+        },
+        "scope_change_applied": {
+          "type": "boolean",
+          "default": false
+        },
+        "scope_change_authorized": {
+          "type": "boolean",
+          "default": false
+        },
+        "scope_change_source": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "skill_task",
+        "autonomous_run",
+        "private_data_required",
+        "ai_trivial",
+        "nontrivial_reason",
+        "data_strategy",
+        "conversion_note"
+      ],
+      "additionalProperties": true
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "interactive_required": {
+          "type": "boolean"
+        },
+        "minimum_input": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ambiguity_policy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "human_role_after_run": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "interactive_required",
+        "minimum_input",
+        "ambiguity_policy",
+        "human_role_after_run"
+      ],
+      "additionalProperties": true
+    },
+    "scope_assessment": {
+      "type": "object",
+      "properties": {
+        "complex": {
+          "type": "boolean"
+        },
+        "long_chain": {
+          "type": "boolean"
+        },
+        "long_cycle": {
+          "type": "boolean"
+        },
+        "agent_like": {
+          "type": "boolean"
+        },
+        "enterprise_dependency": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": "string"
+        },
+        "student_slice": {
+          "type": "string"
+        },
+        "original_enterprise_dependency": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "complex",
+        "long_chain",
+        "long_cycle",
+        "agent_like",
+        "enterprise_dependency",
+        "note",
+        "student_slice"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "anyOf": [
+              {
+                "properties": {
+                  "complex": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "complex"
+                ]
+              },
+              {
+                "properties": {
+                  "long_chain": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "long_chain"
+                ]
+              },
+              {
+                "properties": {
+                  "long_cycle": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "long_cycle"
+                ]
+              },
+              {
+                "properties": {
+                  "agent_like": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "agent_like"
+                ]
+              },
+              {
+                "properties": {
+                  "enterprise_dependency": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "enterprise_dependency"
+                ]
+              },
+              {
+                "properties": {
+                  "original_enterprise_dependency": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "original_enterprise_dependency"
+                ]
+              }
+            ]
+          },
+          "then": {
+            "properties": {
+              "note": {
+                "type": "string",
+                "minLength": 1
+              },
+              "student_slice": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "requirement": {
+            "type": "string",
+            "minLength": 1
+          },
+          "example": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "owner": {
+            "enum": [
+              "customer",
+              "customer_optional",
+              "skill_research"
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "student_fallback": {
+            "type": "string"
+          },
+          "dependency_note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "requirement",
+          "example",
+          "source",
+          "owner",
+          "required"
+        ],
+        "additionalProperties": true
+      },
+      "minItems": 1
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "detail": {
+            "type": "string",
+            "minLength": 1
+          },
+          "example": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "detail",
+          "example",
+          "source"
+        ],
+        "additionalProperties": true
+      },
+      "minItems": 1
+    },
+    "output_options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recommended": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "recommended"
+        ],
+        "additionalProperties": true
+      },
+      "minItems": 1,
+      "maxItems": 3
+    },
+    "selected_output": {
+      "type": "string"
+    },
+    "reviewer": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "additionalProperties": true
+    },
+    "sample": {
+      "type": "object",
+      "properties": {
+        "real": {
+          "type": "boolean"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3,
+          "default": 3
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "real",
+        "note"
+      ],
+      "additionalProperties": true
+    },
+    "rubric_approved": {
+      "type": "boolean"
+    },
+    "kr2_2": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "basis": {
+            "type": "string",
+            "minLength": 1
+          },
+          "company_check": {
+            "type": "string",
+            "minLength": 1
+          },
+          "anchor_1": {
+            "type": "string",
+            "minLength": 1
+          },
+          "anchor_3": {
+            "type": "string",
+            "minLength": 1
+          },
+          "anchor_5": {
+            "type": "string",
+            "minLength": 1
+          },
+          "basis_type": {
+            "enum": [
+              "enterprise_rule",
+              "role_common_practice",
+              "verified_standard",
+              "proposal"
+            ]
+          },
+          "refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "basis",
+          "company_check",
+          "anchor_1",
+          "anchor_3",
+          "anchor_5",
+          "basis_type",
+          "refs"
+        ],
+        "additionalProperties": true
+      },
+      "minItems": 1
+    },
+    "kr2_3": {
+      "type": "object",
+      "properties": {
+        "稳定性": {
+          "type": "object",
+          "properties": {
+            "check": {
+              "type": "string",
+              "minLength": 1
+            },
+            "anchor_1": {
+              "type": "string",
+              "minLength": 1
+            },
+            "anchor_3": {
+              "type": "string",
+              "minLength": 1
+            },
+            "anchor_5": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "check",
+            "anchor_1",
+            "anchor_3",
+            "anchor_5"
+          ],
+          "additionalProperties": true
+        },
+        "可迁移性": {
+          "type": "object",
+          "properties": {
+            "check": {
+              "type": "string",
+              "minLength": 1
+            },
+            "anchor_1": {
+              "type": "string",
+              "minLength": 1
+            },
+            "anchor_3": {
+              "type": "string",
+              "minLength": 1
+            },
+            "anchor_5": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "check",
+            "anchor_1",
+            "anchor_3",
+            "anchor_5"
+          ],
+          "additionalProperties": true
+        },
+        "安全性": {
+          "type": "object",
+          "properties": {
+            "check": {
+              "type": "string",
+              "minLength": 1
+            },
+            "anchor_1": {
+              "type": "string",
+              "minLength": 1
+            },
+            "anchor_3": {
+              "type": "string",
+              "minLength": 1
+            },
+            "anchor_5": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "check",
+            "anchor_1",
+            "anchor_3",
+            "anchor_5"
+          ],
+          "additionalProperties": true
+        },
+        "效率": {
+          "type": "object",
+          "properties": {
+            "check": {
+              "type": "string",
+              "minLength": 1
+            },
+            "anchor_1": {
+              "type": "string",
+              "minLength": 1
+            },
+            "anchor_3": {
+              "type": "string",
+              "minLength": 1
+            },
+            "anchor_5": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "check",
+            "anchor_1",
+            "anchor_3",
+            "anchor_5"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "稳定性",
+        "可迁移性",
+        "安全性",
+        "效率"
+      ],
+      "additionalProperties": false
+    },
+    "confirmations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "section": {
+            "enum": [
+              "01",
+              "02",
+              "03",
+              "04",
+              "05",
+              "06",
+              "07"
+            ]
+          },
+          "topic": {
+            "type": "string",
+            "minLength": 1
+          },
+          "question": {
+            "type": "string",
+            "minLength": 1
+          },
+          "answer": {
+            "type": "string"
+          },
+          "refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "id",
+          "section",
+          "topic",
+          "question"
+        ],
+        "additionalProperties": true
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "title",
+    "scenario",
+    "purpose",
+    "objective",
+    "taxonomy",
+    "sources",
+    "task_fit",
+    "runtime",
+    "scope_assessment",
+    "inputs",
+    "outputs",
+    "output_options",
+    "selected_output",
+    "reviewer",
+    "sample",
+    "rubric_approved",
+    "kr2_2",
+    "kr2_3",
+    "confirmations"
+  ],
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "task_fit": {
+            "properties": {
+              "scope_change_applied": {
+                "const": true
+              }
+            },
+            "required": [
+              "scope_change_applied"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "task_fit": {
+            "properties": {
+              "scope_change_authorized": {
+                "const": true
+              },
+              "conversion_note": {
+                "type": "string",
+                "minLength": 1
+              },
+              "scope_change_source": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "scope_change_authorized",
+              "scope_change_source"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+# Free compute; all durable data lives in Supabase, not the Render filesystem.
+services:
+  - type: web
+    name: enterprise-brief-agent
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -c gunicorn.conf.py wsgi:app
+    healthCheckPath: /healthz
+    numInstances: 1
+    autoDeployTrigger: "off"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.12
+      - key: BRIEF_DATA_DIR
+        value: /tmp/brief-agent
+      - key: PUBLIC_STORAGE_BACKEND
+        value: supabase
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: PUBLIC_SESSION_SECRET
+        generateValue: true
+      - key: BRIEF_API_BASE_URL
+        sync: false
+      - key: BRIEF_MODEL
+        sync: false
+      - key: BRIEF_API_KEY
+        sync: false
+      - key: PUBLIC_DAILY_CALLS
+        value: "160"
+      - key: PUBLIC_VISITOR_DAILY_CALLS
+        value: "24"
+      - key: PUBLIC_CONCURRENT_RUNS
+        value: "2"
+      - key: PUBLIC_MAX_VISITORS
+        value: "200"
