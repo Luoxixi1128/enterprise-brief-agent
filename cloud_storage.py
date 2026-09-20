@@ -7,6 +7,7 @@ import hashlib
 import http.client
 import json
 import os
+import re
 import secrets
 import threading
 import time
@@ -81,6 +82,13 @@ class SupabaseClient:
 
     @staticmethod
     def object_path(key):
+        # Storage rejects non-ASCII object names even when URL-encoded. Keep
+        # existing safe keys unchanged; map display filenames to stable internal
+        # keys for both upload and cache-miss download. Chinese download names
+        # stay in task metadata and Content-Disposition.
+        if not re.fullmatch(r"[A-Za-z0-9/_.!'()* &$@=;:+,?\-]+", key):
+            visitor=key.split('/',1)[0]
+            key=visitor+'/_encoded/'+hashlib.sha256(key.encode()).hexdigest()
         return '/storage/v1/object/brief-private/' + quote(key, safe='/')
 
     def upload(self, key, data):

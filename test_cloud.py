@@ -209,6 +209,18 @@ class CloudTests(test_public.PublicTests):
         self.assertEqual(result['status'],503)
         self.assertIn('校验未通过',result['data']['error'])
 
+    def test_unicode_object_keys_are_stable_and_legacy_keys_unchanged(self):
+        safe='visitor/files/task/source.md'
+        self.assertTrue(SupabaseClient.object_path(safe).endswith('/'+safe))
+        first='visitor/exports/task/export/企业任务书.docx'
+        second='visitor/exports/task/export/企业样例表.xlsx'
+        a=SupabaseClient.object_path(first); b=SupabaseClient.object_path(second)
+        self.assertEqual(a,SupabaseClient.object_path(first))
+        self.assertNotEqual(a,b)
+        self.assertRegex(a,r'/visitor/_encoded/[0-9a-f]{64}$')
+        self.cloud.upload(first,b'export bytes')
+        self.assertEqual(self.cloud.download(first),b'export bytes')
+
     def test_version_commit_retry_is_idempotent_at_limit(self):
         t = self.new(); store = self.store()
         versions = [{'id':uid(),'task_id':t['id'],'created_at':str(i)} for i in range(80)]
