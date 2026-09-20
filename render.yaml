@@ -30,9 +30,9 @@ services:
       - key: BRIEF_API_KEY
         sync: false
       - key: PUBLIC_DAILY_CALLS
-        value: "160"
+        value: "300"
       - key: PUBLIC_VISITOR_DAILY_CALLS
-        value: "24"
+        value: "240"
       - key: PUBLIC_CONCURRENT_RUNS
         value: "2"
       - key: PUBLIC_MAX_VISITORS

@@ -113,7 +113,7 @@ def make_app(root=None, secret=None, origin=None, *, testing=False, cloud_client
                 if path == '/api/releases':
                     return send(json.loads((ROOT / 'docs/releases/releases.json').read_text()))
                 if path == '/api/releases/notes':
-                    return file_response(ROOT / 'docs/releases/版本迭代总览.md', '企业需求拆解Agent-V1至V5迭代记录.md')
+                    return file_response(ROOT / 'docs/releases/版本迭代总览.md', '企业需求拆解Agent-V1至V6迭代记录.md')
                 if path in ('/api/tasks', '/api/trash'):
                     return send(store.list(deleted=path.endswith('trash')))
                 if path == '/api/cases':

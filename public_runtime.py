@@ -39,8 +39,8 @@ class PublicRuntime:
         self.lock = threading.RLock()
         self.stores = {}
         self.slots = threading.BoundedSemaphore(int(os.getenv('PUBLIC_CONCURRENT_RUNS', '2')))
-        self.visitor_calls = int(os.getenv('PUBLIC_VISITOR_DAILY_CALLS', '24'))
-        self.daily_calls = int(os.getenv('PUBLIC_DAILY_CALLS', '160'))
+        self.visitor_calls = int(os.getenv('PUBLIC_VISITOR_DAILY_CALLS', '240'))
+        self.daily_calls = int(os.getenv('PUBLIC_DAILY_CALLS', '300'))
         self.max_visitors = int(os.getenv('PUBLIC_MAX_VISITORS', '200'))
         self.storage_limit = int(os.getenv('PUBLIC_STORAGE_MB', '700')) * 1_000_000
         with self.connect() as db:
