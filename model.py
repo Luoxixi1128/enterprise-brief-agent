@@ -14,6 +14,8 @@ from urllib.parse import urlparse
 ROOT = Path(__file__).resolve().parent
 SKILL = ROOT/'vendor/skill-v0.4.3/enterprise-requirements-to-brief'
 CONFIG_LOCK = threading.Lock()
+DEFAULT_MAX_OUTPUT_TOKENS = 64000
+OUTPUT_RETRY_TOKENS = (64000, 128000)
 
 def read_config():
     values = {}
@@ -123,6 +125,17 @@ def parse_response(text):
         raise
 
 
+def _merge_usage(total, current):
+    """Add numeric usage fields across automatic retries."""
+    merged = dict(total or {})
+    for key, value in (current or {}).items():
+        if isinstance(value, (int, float)):
+            merged[key] = merged.get(key, 0) + value
+        elif key not in merged:
+            merged[key] = value
+    return merged
+
+
 def call_model(messages,response_kind='draft'):
     c=read_config()
     if not config_status()['ready']: raise ModelError('网站模型服务尚未配置，请稍后继续。')
@@ -135,51 +148,68 @@ def call_model(messages,response_kind='draft'):
     endpoint=base if base.endswith('/chat/completions') else base+'/chat/completions'
     try:
         timeout=min(300,max(10,int(c.get('BRIEF_API_TIMEOUT','180'))))
-        max_tokens=min(32000,max(1000,int(c.get('BRIEF_MAX_OUTPUT_TOKENS','32000'))))
+        # The old implementation imposed a 32k global cap and then reduced
+        # planning calls to 6k.  DeepSeek reasoning tokens count towards that
+        # budget, so otherwise a valid JSON plan could be cut off first.
+        # Leave the upper bound to the configured provider and retry a length
+        # finish with larger budgets below.
+        max_tokens=max(1000,int(c.get('BRIEF_MAX_OUTPUT_TOKENS',str(DEFAULT_MAX_OUTPUT_TOKENS))))
     except ValueError: raise ModelError('超时和输出长度配置必须是整数。')
-    payload={'model':c['BRIEF_MODEL'],'messages':messages,'stream':False,'max_tokens':max_tokens}
-    if u.hostname=='api.deepseek.com':
-        payload['response_format']={'type':'json_object'}
-        if c['BRIEF_MODEL'] in ['deepseek-flash','deepseek-v4-pro']:
-            payload['thinking']={'type':'enabled'}
-            payload['reasoning_effort']='low'
-            if response_kind=='audit':
-                payload['reasoning_effort']='high'
-                payload['max_tokens']=64000
-                timeout=max(timeout,300)
-        if response_kind=='repair':
-            payload['thinking']={'type':'disabled'}
-            payload.pop('reasoning_effort',None)
-    if response_kind=='plan':payload['max_tokens']=min(payload['max_tokens'],6000)
-    body=json.dumps(payload).encode()
-    req=urllib.request.Request(endpoint,data=body,headers={'Authorization':'Bearer '+c['BRIEF_API_KEY'],'Content-Type':'application/json'})
     class NoRedirect(urllib.request.HTTPRedirectHandler):
         def redirect_request(self,*args,**kwargs): return None
+
+    budgets=[max_tokens]
+    for candidate in OUTPUT_RETRY_TOKENS:
+        if candidate > budgets[-1]: budgets.append(candidate)
+    total_usage={}
+    length_seen=False
     try:
-        deadline=time.monotonic()+timeout
-        with urllib.request.build_opener(NoRedirect).open(req,timeout=timeout) as res:
-            chunks=[];size=0
-            while True:
-                if time.monotonic()>deadline: raise TimeoutError()
-                chunk=res.read1(min(65536,4_000_001-size))
-                if not chunk: break
-                chunks.append(chunk);size+=len(chunk)
-                if size>4_000_000: raise ModelError('模型返回内容过大。')
-            raw=b''.join(chunks)
-        if len(raw)>4_000_000: raise ModelError('模型返回内容过大。')
-        data=json.loads(raw)
-        choice=data['choices'][0]
-        if choice.get('finish_reason')=='length': raise ModelError('模型输出被长度限制截断；请调大输出上限或减少本次材料。',data.get('usage'))
-        content=choice['message']['content']
-        if not isinstance(content,str): raise ModelError('模型没有返回文字内容。')
-        text=content.strip()
-        if text.startswith('```'):
-            text='\n'.join(text.splitlines()[1:-1])
-        try: result=parse_response(text)
-        except json.JSONDecodeError: raise ModelError('模型返回的内容不是完整JSON，原材料已保留，可重试。',data.get('usage'),text[:120000])
-        allowed=['plan'] if response_kind=='plan' else ['audit'] if response_kind=='audit' else ['draft','clarify']
-        if not isinstance(result,dict) or result.get('action') not in allowed: raise ModelError('模型返回的步骤类型无效。',data.get('usage'),text[:120000])
-        return result,data.get('usage',{})
+        for budget in budgets:
+            payload={'model':c['BRIEF_MODEL'],'messages':messages,'stream':False,'max_tokens':budget}
+            if length_seen:
+                payload['messages']=list(messages)+[{'role':'user','content':'上一次输出达到长度上限。请不要省略必要字段，也不要复制长篇原文或解释，只返回完整、可解析的 JSON。'}]
+            if u.hostname=='api.deepseek.com':
+                payload['response_format']={'type':'json_object'}
+                if c['BRIEF_MODEL'] in ['deepseek-flash','deepseek-v4-pro']:
+                    payload['thinking']={'type':'enabled'}
+                    payload['reasoning_effort']='low'
+                    if response_kind=='audit':
+                        payload['reasoning_effort']='high'
+                        payload['max_tokens']=max(payload['max_tokens'],64000)
+                        timeout=max(timeout,300)
+                if response_kind=='repair':
+                    payload['thinking']={'type':'disabled'}
+                    payload.pop('reasoning_effort',None)
+            body=json.dumps(payload).encode()
+            req=urllib.request.Request(endpoint,data=body,headers={'Authorization':'Bearer '+c['BRIEF_API_KEY'],'Content-Type':'application/json'})
+            deadline=time.monotonic()+timeout
+            with urllib.request.build_opener(NoRedirect).open(req,timeout=timeout) as res:
+                chunks=[];size=0
+                while True:
+                    if time.monotonic()>deadline: raise TimeoutError()
+                    chunk=res.read1(min(65536,4_000_001-size))
+                    if not chunk: break
+                    chunks.append(chunk);size+=len(chunk)
+                    if size>4_000_000: raise ModelError('模型返回内容过大。')
+                raw=b''.join(chunks)
+            if len(raw)>4_000_000: raise ModelError('模型返回内容过大。')
+            data=json.loads(raw)
+            total_usage=_merge_usage(total_usage,data.get('usage',{}))
+            choice=data['choices'][0]
+            if choice.get('finish_reason')=='length':
+                length_seen=True
+                continue
+            content=choice['message']['content']
+            if not isinstance(content,str): raise ModelError('模型没有返回文字内容。')
+            text=content.strip()
+            if text.startswith('```'):
+                text='\n'.join(text.splitlines()[1:-1])
+            try: result=parse_response(text)
+            except json.JSONDecodeError: raise ModelError('模型返回的内容不是完整JSON，原材料已保留，可重试。',total_usage,text[:120000])
+            allowed=['plan'] if response_kind=='plan' else ['audit'] if response_kind=='audit' else ['draft','clarify']
+            if not isinstance(result,dict) or result.get('action') not in allowed: raise ModelError('模型返回的步骤类型无效。',total_usage,text[:120000])
+            return result,total_usage
+        raise ModelError('模型已自动尝试更大输出预算，但仍未返回完整结果；资料和进度已保留，可继续处理。',total_usage)
     except urllib.error.HTTPError as e:
         label={401:'密钥无效或无权限',402:'网站模型额度暂不可用，进度已保留，请稍后继续',403:'模型或网络权限不足',404:'接口地址或模型名称错误',429:'请求限流，请稍后继续'}.get(e.code,'服务暂时不可用')
         raise ModelError(f'模型接口返回 HTTP {e.code}：{label}。') from None
